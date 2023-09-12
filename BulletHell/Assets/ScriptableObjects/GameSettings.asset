@@ -12,28 +12,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e7cd5bdd1f970c40bbebdc871b6ca11, type: 3}
   m_Name: GameSettings
   m_EditorClassIdentifier: 
-  levelsSettings:
+  LevelsSettings:
   - EntityCount: 50
-    color: {r: 0.0627451, g: 0.7137255, b: 1, a: 1}
-    entitySettings:
+    Color: {r: 0.0627451, g: 0.7137255, b: 1, a: 1}
+    EntitySettings:
       Lives: 3
-      BulletVelocity: 10
+      BulletVelocity: 1
       RespawnDelay: 2
+      MinimalRotationInterval: 0
+      MaximalRotationInterval: 1
+      MinimalRotation: 0
+      MaximalRotation: 360
   - EntityCount: 100
-    color: {r: 0.65882355, g: 1, b: 0.0627451, a: 1}
-    entitySettings:
+    Color: {r: 0.65882355, g: 1, b: 0.0627451, a: 1}
+    EntitySettings:
       Lives: 3
       BulletVelocity: 10
       RespawnDelay: 2
+      MinimalRotationInterval: 0
+      MaximalRotationInterval: 1
+      MinimalRotation: 0
+      MaximalRotation: 360
   - EntityCount: 250
-    color: {r: 1, g: 0.7254902, b: 0.0627451, a: 1}
-    entitySettings:
+    Color: {r: 1, g: 0.7254902, b: 0.0627451, a: 1}
+    EntitySettings:
       Lives: 3
       BulletVelocity: 10
       RespawnDelay: 2
+      MinimalRotationInterval: 0
+      MaximalRotationInterval: 1
+      MinimalRotation: 0
+      MaximalRotation: 360
   - EntityCount: 500
-    color: {r: 1, g: 0.29803923, b: 0.0627451, a: 1}
-    entitySettings:
+    Color: {r: 1, g: 0.29803923, b: 0.0627451, a: 1}
+    EntitySettings:
       Lives: 3
       BulletVelocity: 10
       RespawnDelay: 2
+      MinimalRotationInterval: 0
+      MaximalRotationInterval: 1
+      MinimalRotation: 0
+      MaximalRotation: 360

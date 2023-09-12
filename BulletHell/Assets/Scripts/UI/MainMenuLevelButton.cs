@@ -7,6 +7,8 @@ public class MainMenuLevelButton : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _buttonText;
     [SerializeField] private Image _buttonIcon;
 
+    [HideInInspector] public int boundLevelSettingIndex;
+
     public void SetupVisuals(Color iconColor, string buttonText)
     {
         _buttonIcon.color = iconColor;
