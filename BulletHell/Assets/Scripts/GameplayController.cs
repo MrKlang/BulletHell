@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public delegate void OnUpdate();
@@ -18,8 +19,9 @@ public class GameplayController : MonoBehaviour
     private Vector2 _entitySize;
     private LevelSettings _currentlevelSettings;
 
-    private List<Vector3> _availablePositionsForSpawn = new List<Vector3>();
-    private Dictionary<Vector2, GameplayEntity> _spawnedTransforms = new Dictionary<Vector2, GameplayEntity>();
+    private List<GameplayTile> _availableTilesForSpawn = new List<GameplayTile>();
+    private List<GameplayTile> _occupiedTilesForSpawn = new List<GameplayTile>();
+    private List<GameplayEntity> _liveEntities = new List<GameplayEntity>();
 
     public GameSettings Settings => _settings;
     public LevelSettings CurrentLevelSettings => _currentlevelSettings;
@@ -36,13 +38,13 @@ public class GameplayController : MonoBehaviour
 
         for (int i = 0; i < _currentlevelSettings.EntityCount; i++)
         {
-            int index = Random.Range(0, _availablePositionsForSpawn.Count);
-            Vector2 spawnPosition = _availablePositionsForSpawn[index];
-            Transform newTransform = Instantiate(_entityPrefab, spawnPosition, Quaternion.identity, _grid.transform).transform;
+            GameplayTile tile = _availableTilesForSpawn[Random.Range(0, _availableTilesForSpawn.Count)];
+            Transform newTransform = Instantiate(_entityPrefab, tile.Data.position, Quaternion.identity, _grid.transform).transform;
             GameplayEntity currentGameplayEntity = newTransform.GetComponent<GameplayEntity>();
             currentGameplayEntity.Data = new GameplayEntityData 
             {   currentLives = entitySettings.Lives,
                 bulletVelocity = entitySettings.BulletVelocity,
+                bulletLifetime = entitySettings.BulletLifetime,
                 maximalRotation = entitySettings.MaximalRotation,
                 minimalRotation = entitySettings.MinimalRotation,
                 minimalRotationInterval = entitySettings.MinimalRotationInterval,
@@ -50,9 +52,37 @@ public class GameplayController : MonoBehaviour
                 respawnDelay = entitySettings.RespawnDelay
             };
 
-            _spawnedTransforms.Add(spawnPosition, currentGameplayEntity);
-            _availablePositionsForSpawn.RemoveAt(index);
+            tile.occupyingEntity = currentGameplayEntity;
+
+            _liveEntities.Add(currentGameplayEntity);
+            _occupiedTilesForSpawn.Add(tile);
+            _availableTilesForSpawn.Remove(tile);
         }
+    }
+
+    public void CheckTilesForCollision(GameplayProjectile projectile, Vector3 originPosition)
+    {
+        for(int i =0; i< _occupiedTilesForSpawn.Count; i++)
+        {
+            if(_occupiedTilesForSpawn[i].IsPositionInTile(projectile.transform.position) && !_occupiedTilesForSpawn[i].occupyingEntity.ownedProjectiles.Contains(projectile))
+            {
+                MoveEntityToGraveyard(_occupiedTilesForSpawn[i].occupyingEntity);
+                EmptyTile(_occupiedTilesForSpawn[i]);
+                Destroy(projectile.gameObject);
+                break;
+            }
+        }
+    }
+
+    public void RespawnEntity(GameplayEntity entity)
+    {
+        GameplayTile tile = _availableTilesForSpawn[Random.Range(0, _availableTilesForSpawn.Count)];
+        tile.occupyingEntity = entity;
+        entity.transform.position = tile.Data.position;
+        entity.transform.parent = _grid.transform;
+
+        _occupiedTilesForSpawn.Add(tile);
+        _availableTilesForSpawn.Remove(tile);
     }
 
     public void SetCurrentLevelSettings(int index)
@@ -77,6 +107,7 @@ public class GameplayController : MonoBehaviour
         Vector3[] frustrumCorners = new Vector3[4];
 
         onBeginPlay += BeginPlay;
+        onEntityPerished += PerformGameOverCheck;
 
         _mainCamera = Camera.main;
         _mainCamera.CalculateFrustumCorners(_mainCamera.rect, _mainCamera.farClipPlane, Camera.MonoOrStereoscopicEye.Mono, frustrumCorners);
@@ -88,7 +119,17 @@ public class GameplayController : MonoBehaviour
         _maxSpawnPosition = _mainCamera.transform.TransformVector(frustrumCorners[2]);
         _maxSpawnPosition -= _entitySize / 2;
 
-        CacheAvailablePositions();
+        PrepareTiles();
+    }
+
+    private void PerformGameOverCheck()
+    {
+        if(_liveEntities.Count == 1)
+        {
+            _liveEntities[0].StopAllCoroutines();
+            Destroy(_liveEntities[0].gameObject);
+            FindObjectOfType<UIController>().ToggleGameOver(true);
+        }
     }
 
     private void Update()
@@ -96,7 +137,7 @@ public class GameplayController : MonoBehaviour
         onUpdate?.Invoke();
     }
 
-    private void CacheAvailablePositions()
+    private void PrepareTiles()
     {
         Vector3Int gridMin = _grid.WorldToCell(_minSpawnPosition);
         Vector3Int gridMax = _grid.WorldToCell(_maxSpawnPosition);
@@ -106,15 +147,35 @@ public class GameplayController : MonoBehaviour
             for (int y = gridMin.y; y < gridMax.y; ++y)
             {
                 Vector3 proposedSpawnPosition = _grid.GetCellCenterWorld(new Vector3Int(x, y));
-                RaycastHit2D hit = Physics2D.BoxCast(proposedSpawnPosition, _entitySize, 0, Vector2.zero);
-                
-                if (hit.transform != null)
-                {
-                    continue;
-                }
-
-                _availablePositionsForSpawn.Add(proposedSpawnPosition);
+                Vector3 tileOffsetBasedOnSize = _entitySize / 2;
+                GameplayTile newTile = new GameplayTile();
+                newTile.Data = new GameplayTileData { position = proposedSpawnPosition, topCorner = proposedSpawnPosition + tileOffsetBasedOnSize, bottomCorner = proposedSpawnPosition - tileOffsetBasedOnSize };
+                _availableTilesForSpawn.Add(newTile);
             }
+        }
+    }
+
+    private void EmptyTile(GameplayTile tile)
+    {
+        tile.occupyingEntity = null;
+        _availableTilesForSpawn.Add(tile);
+        _occupiedTilesForSpawn.Remove(tile);
+    }
+
+    private void MoveEntityToGraveyard(GameplayEntity entity)
+    {
+        if (entity != null)
+        {
+            entity.transform.parent = _graveyard;
+            entity.transform.localPosition = Vector3.zero;
+            entity.Data.currentLives--;
+
+            if (entity.Data.currentLives == 0)
+            {
+                _liveEntities.Remove(entity);
+            }
+
+            entity.IsRespawning = true;
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,45 +6,37 @@ using UnityEngine;
 public class GameplayProjectile : MonoBehaviour
 {
     [HideInInspector] public Vector3 projectileDirection;
-    [HideInInspector] public Transform projectileSpawner;
+    [HideInInspector] public float projectileVelocity;
+    [HideInInspector] public float projectileLifetime;
 
-    private float _distanceToImpact;
-    private float _movementTime;
-    private Transform _target;
+    public Action<GameplayProjectile> NotifyOnDestroy; 
 
-    private float currentLifetime = 5.0f;
+    private Vector3 projectileSpawnPosition;
+    private float currentLifetime = 0.0f;
 
     void Start()
     {
-        RaycastHit2D[] circleCastResults = Physics2D.CircleCastAll(transform.position, GetComponent<CircleCollider2D>().radius, projectileDirection.normalized);
-
-        Debug.LogError($"Circle cast results count: {circleCastResults.Length}");
-
-        for(int i =0;i< circleCastResults.Length; i++)
-        {
-            if (circleCastResults[i].transform != projectileSpawner)
-            {
-                _target = circleCastResults[i].transform;
-                _distanceToImpact = circleCastResults[i].distance;
-                Debug.LogError($"Got target which is {_target.name}");
-            }
-        }
-
-        _movementTime = _target != null ? _distanceToImpact / GameplayController.instance.CurrentLevelSettings.EntitySettings.BulletVelocity : 5.0f;
-
-        StartCoroutine(MoveProjectile());
+        projectileSpawnPosition = transform.position;
+        GameplayController.onUpdate += OnUpdate;
     }
 
-    private IEnumerator MoveProjectile()
+    private void OnDestroy()
     {
-        float currentTime = 0;
-        while (currentTime < _movementTime)
-        {
-            currentTime += Time.deltaTime;
-            transform.Translate(projectileDirection.normalized * Time.deltaTime);
-            yield return null;
-        }
+        NotifyOnDestroy?.Invoke(this);
+        GameplayController.onUpdate -= OnUpdate;
+    }
 
-        Debug.LogError("Destroy here!");
+    private void OnUpdate()
+    {
+        if(currentLifetime <= projectileLifetime)
+        {
+            currentLifetime += Time.deltaTime;
+            transform.Translate(projectileDirection.normalized * Time.deltaTime * projectileVelocity);
+            GameplayController.instance.CheckTilesForCollision(this, projectileSpawnPosition);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

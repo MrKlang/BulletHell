@@ -7,6 +7,7 @@ public class EntitySettings
 {
     public int Lives;
     public float BulletVelocity;
+    public float BulletLifetime;
     public float RespawnDelay;
     public float MinimalRotationInterval;
     public float MaximalRotationInterval;
