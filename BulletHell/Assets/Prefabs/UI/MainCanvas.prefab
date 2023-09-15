@@ -126,6 +126,10 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
       value: ToggleMainMenu
       objectReference: {fileID: 0}
+    - target: {fileID: 4708683305207584989, guid: 1873a925a53af2942ace4c29fa89ba9a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5348089424330929004, guid: 1873a925a53af2942ace4c29fa89ba9a, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -214,6 +218,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainMenu
       objectReference: {fileID: 0}
+    - target: {fileID: 7355512625944462989, guid: 1873a925a53af2942ace4c29fa89ba9a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -243,6 +251,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4709091636569452396}
     m_Modifications:
+    - target: {fileID: 1169466484159782949, guid: 1e8318b04728edd428e71cb5e2da8ecd, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 8594379543995657627}
+    - target: {fileID: 1169466484159782949, guid: 1e8318b04728edd428e71cb5e2da8ecd, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 8594379543995657627}
     - target: {fileID: 3576587559997998952, guid: 1e8318b04728edd428e71cb5e2da8ecd, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

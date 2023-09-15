@@ -52,6 +52,7 @@ public class GameplayController : MonoBehaviour
 
     public void BeginPlay()
     {
+        _liveEntities.Clear();
         EntitySettings entitySettings = _currentlevelSettings.EntitySettings;
 
         for (int i = 0; i < _currentlevelSettings.EntityCount; i++)
