@@ -1,13 +1,17 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public class MainMenuController : MonoBehaviour
 {
+    #region Serialize Field
+
     [SerializeField] private List<MainMenuLevelButton> _levelSelectionButtons;
     [SerializeField] private StartButtonController _startButton;
+
+    #endregion
+
+    #region Public Methods
 
     public void Setup()
     {
@@ -31,4 +35,6 @@ public class MainMenuController : MonoBehaviour
 
         _startButton.onStartAvailable?.Invoke();
     }
+
+    #endregion
 }

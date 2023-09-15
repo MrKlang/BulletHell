@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameplayTileData
@@ -11,9 +9,20 @@ public class GameplayTileData
 
 public class GameplayTile
 {
-    public GameplayEntity occupyingEntity;
+    #region Private Fields
 
     private GameplayTileData _data;
+
+    #endregion
+
+    #region Public Fields
+
+    public GameplayEntity occupyingEntity;
+
+    #endregion
+
+    #region Public Properties
+
     public GameplayTileData Data 
     {
         get => _data;
@@ -22,6 +31,10 @@ public class GameplayTile
             _data = value;
         }
     }
+
+    #endregion
+
+    #region Public Methods
 
     public bool IsPositionInTile(Vector3 incomingObjectPosition)
     {
@@ -35,4 +48,6 @@ public class GameplayTile
 
         return false;
     }
+
+    #endregion
 }

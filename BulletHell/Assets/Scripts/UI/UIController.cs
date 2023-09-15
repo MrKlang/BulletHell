@@ -1,19 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class UIController : MonoBehaviour
 {
+    #region Serialized Fields
+
     [SerializeField] private MainMenuController _mainMenu;
     [SerializeField] private GameObject _gameOverMenu;
 
-    void Start()
-    {
-        _mainMenu.Setup();
+    #endregion
 
-        ToggleMainMenu(true);
-        ToggleGameOver(false);
-    }
+    #region Public Methods
+
     public void ToggleMainMenu(bool active)
     {
         _mainMenu.gameObject.SetActive(active);
@@ -23,4 +20,18 @@ public class UIController : MonoBehaviour
     {
         _gameOverMenu.SetActive(active);
     }
+
+    #endregion
+
+    #region Private Methods
+
+    private void Start()
+    {
+        _mainMenu.Setup();
+
+        ToggleMainMenu(true);
+        ToggleGameOver(false);
+    }
+
+    #endregion
 }

@@ -16,8 +16,15 @@ public class GameplayEntityData
 
 public class GameplayEntity : MonoBehaviour
 {
+    #region Serialized Fields
+
     [SerializeField] private GameObject _projectilePrefab;
     [SerializeField] private Transform _projectileSpawner;
+    [SerializeField] private Transform _projectilePool;
+
+    #endregion
+
+    #region Private Fields
 
     private float _respawnInSeconds;
     private bool _isRespawning;
@@ -29,9 +36,17 @@ public class GameplayEntity : MonoBehaviour
     private GameplayEntityData _data;
     private WaitForSeconds _firingDelay = new WaitForSeconds(1.0f);
     private WaitForSeconds _respawnInterval;
+    private Queue<GameplayProjectile> _projectiles;
 
-    [HideInInspector]
-    public List<GameplayProjectile> ownedProjectiles = new List<GameplayProjectile>();
+    #endregion
+
+    #region Public Fields
+
+    [HideInInspector] public List<GameplayProjectile> firedProjectiles = new List<GameplayProjectile>();
+
+    #endregion
+
+    #region Public Properties
 
     public bool IsRespawning
     {
@@ -60,8 +75,18 @@ public class GameplayEntity : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Private Methods
+
     private void Start()
     {
+        _projectiles = new Queue<GameplayProjectile>();
+        for (int i =0; i < _projectilePool.childCount; i++)
+        {
+            _projectiles.Enqueue(_projectilePool.GetChild(i).GetComponent<GameplayProjectile>());
+        }
+
         GameplayController.onUpdate += OnUpdate;
         Fire();
     }
@@ -107,7 +132,6 @@ public class GameplayEntity : MonoBehaviour
         yield return _respawnInterval;
         GameplayController.instance.RespawnEntity(this);
         _isRespawning = false;
-        respawnCounter++;
         Fire();
     }
 
@@ -125,18 +149,42 @@ public class GameplayEntity : MonoBehaviour
     private IEnumerator OpenFire()
     {
         yield return _firingDelay;
-        GameObject spawnedProjectile = Instantiate(_projectilePrefab, transform.position, Quaternion.identity);
-        GameplayProjectile projectile = spawnedProjectile.GetComponent<GameplayProjectile>();
+        GameplayProjectile projectile = _projectiles.Dequeue();
         projectile.projectileDirection = transform.position - _projectileSpawner.position;
         projectile.projectileVelocity = _data.bulletVelocity;
         projectile.projectileLifetime = _data.bulletLifetime;
-        projectile.NotifyOnDestroy += RemoveProjectileFromOwned;
-        ownedProjectiles.Add(projectile);
+
+        if (projectile.NotifyCreatorOnCollision == null)
+        {
+            projectile.creator = transform;
+            projectile.NotifyCreatorOnCollision += RemoveProjectileFromOwned;
+        }
+
+        firedProjectiles.Add(projectile);
+
+        projectile.transform.parent = null;
+        projectile.transform.localScale = Vector3.one;
+        projectile.projectileImage.enabled = true;
+        
         Fire();
     }
 
     private void RemoveProjectileFromOwned(GameplayProjectile projectile)
     {
-        ownedProjectiles.Remove(projectile);
+        if(transform == null)
+        {
+            Destroy(projectile.gameObject);
+            return;
+        }
+
+        projectile.projectileLifetime = 0;
+        projectile.projectileImage.enabled = false;
+        projectile.transform.parent = _projectilePool; //null shouldn't happen but OH WELL
+        projectile.transform.localPosition = Vector3.zero;
+
+        firedProjectiles.Remove(projectile);
+        _projectiles.Enqueue(projectile);
     }
+
+    #endregion
 }

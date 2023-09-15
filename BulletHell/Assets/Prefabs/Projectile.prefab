@@ -41,7 +41,7 @@ SpriteRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8030053709777482951}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
@@ -133,5 +133,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61dfcfd48f6a7254aa40fe5b529fc3c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  projectileImage: {fileID: 5077665824093584861}
   projectileDirection: {x: 0, y: 0, z: 0}
-  projectileSpawner: {fileID: 0}
+  projectileVelocity: 0
+  projectileLifetime: 0
+  allowMovement: 0
